@@ -1,0 +1,23 @@
+version = 0.1
+
+[o-f9a3361e-dev]
+[o-f9a3361e-dev.deploy]
+[o-f9a3361e-dev.deploy.parameters]
+aws_account_number = "360520317360"
+stack_name = "o-f9a3361e-dev"
+s3_prefix = "o-f9a3361e-dev"
+region = "eu-central-1"
+confirm_changeset = false
+capabilities = "CAPABILITY_IAM CAPABILITY_AUTO_EXPAND CAPABILITY_NAMED_IAM"
+disable_rollback = false
+
+[o-f9a3361e-prod]
+[o-f9a3361e-prod.deploy]
+[o-f9a3361e-prod.deploy.parameters]
+aws_account_number = "360520317360"
+stack_name = "o-f9a3361e-prod"
+s3_prefix = "o-f9a3361e-prod"
+region = "eu-central-1"
+confirm_changeset = false
+capabilities = "CAPABILITY_IAM CAPABILITY_AUTO_EXPAND CAPABILITY_NAMED_IAM"
+disable_rollback = false

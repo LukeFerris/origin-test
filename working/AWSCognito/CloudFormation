@@ -1,0 +1,413 @@
+// ["AWSCognito", "CloudFormation"]    
+
+
+{
+  "Outputs": {
+    "AWSCognitoUrl": {
+      "Description": "The URL of the Cognito Admin Function API",
+      "Value": {
+        "Fn::Sub": "https://${AWSCognitoHttpApi}.execute-api.${AWS::Region}.amazonaws.com"
+      }
+    },
+    "AWSCognitoUserPoolId": {
+      "Description": "Cognito User Pool ID",
+      "Value": { "Ref": "AWSCognitoUserPool" }
+    },
+    "AWSCognitoUserPoolClientId": {
+      "Description": "Cognito User Pool Client ID",
+      "Value": { "Ref": "AWSCognitoUserPoolClient" }
+    }
+  },
+  "Resources": {
+    "AWSCognitoHttpApi": {
+      "Type": "AWS::Serverless::HttpApi",
+      "Properties": {
+        "CorsConfiguration": {
+          "AllowOrigins": ["*"],
+          "AllowHeaders": ["*"],
+          "AllowMethods": ["*"],
+          "ExposeHeaders": ["X-Total-Count"]
+        },
+        "Auth": {
+          "DefaultAuthorizer": "CognitoAuthorizer",
+          "Authorizers": {
+            "CognitoAuthorizer": {
+              "JwtConfiguration": {
+                "issuer": {
+                  "Fn::Sub": "https://cognito-idp.${AWS::Region}.amazonaws.com/${AWSCognitoUserPool}"
+                },
+                "audience": [
+                  {
+                    "Ref": "AWSCognitoUserPoolClient"
+                  }
+                ]
+              },
+              "IdentitySource": "$request.header.Authorization"
+            }
+          }
+        },
+        "FailOnWarnings": true,
+        "DefinitionBody": {
+          "openapi": "3.0.1",
+          "info": {
+            "title": "Cognito User Management API",
+            "version": "1.0.0"
+          },
+          "paths": {
+            "/users": {
+              "get": {
+                "summary": "List all users",
+                "responses": {
+                  "200": {
+                    "description": "Successful response",
+                    "content": {
+                      "application/json": {
+                        "schema": {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/components/schemas/User"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              "post": {
+                "summary": "Create a new user",
+                "requestBody": {
+                  "required": true,
+                  "content": {
+                    "application/json": {
+                      "schema": {
+                        "$ref": "#/components/schemas/NewUser"
+                      }
+                    }
+                  }
+                },
+                "responses": {
+                  "200": {
+                    "description": "User created successfully",
+                    "content": {
+                      "application/json": {
+                        "schema": {
+                          "$ref": "#/components/schemas/SuccessResponse"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "/users/{userId}": {
+              "get": {
+                "summary": "Get a specific user",
+                "parameters": [
+                  {
+                    "name": "userId",
+                    "in": "path",
+                    "required": true,
+                    "schema": {
+                      "type": "string"
+                    }
+                  }
+                ],
+                "responses": {
+                  "200": {
+                    "description": "Successful response",
+                    "content": {
+                      "application/json": {
+                        "schema": {
+                          "$ref": "#/components/schemas/User"
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              "put": {
+                "summary": "Update an existing user",
+                "parameters": [
+                  {
+                    "name": "userId",
+                    "in": "path",
+                    "required": true,
+                    "schema": {
+                      "type": "string"
+                    }
+                  }
+                ],
+                "requestBody": {
+                  "required": true,
+                  "content": {
+                    "application/json": {
+                      "schema": {
+                        "$ref": "#/components/schemas/UpdateUser"
+                      }
+                    }
+                  }
+                },
+                "responses": {
+                  "200": {
+                    "description": "User updated successfully",
+                    "content": {
+                      "application/json": {
+                        "schema": {
+                          "$ref": "#/components/schemas/SuccessResponse"
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              "delete": {
+                "summary": "Delete a user",
+                "parameters": [
+                  {
+                    "name": "userId",
+                    "in": "path",
+                    "required": true,
+                    "schema": {
+                      "type": "string"
+                    }
+                  }
+                ],
+                "responses": {
+                  "200": {
+                    "description": "User deleted successfully",
+                    "content": {
+                      "application/json": {
+                        "schema": {
+                          "$ref": "#/components/schemas/SuccessResponse"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "components": {
+            "schemas": {
+              "User": {
+                "type": "object",
+                "properties": {
+                  "username": {
+                    "type": "string"
+                  },
+                  "attributes": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "Name": {
+                          "type": "string"
+                        },
+                        "Value": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              "NewUser": {
+                "type": "object",
+                "properties": {
+                  "username": {
+                    "type": "string"
+                  },
+                  "password": {
+                    "type": "string"
+                  },
+                  "email": {
+                    "type": "string"
+                  },
+                  "temporaryPassword": {
+                    "type": "string",
+                    "description": "Optional. If provided, creates user through admin creation instead of self-registration"
+                  }
+                },
+                "required": ["username"]
+              },
+              "UpdateUser": {
+                "type": "object",
+                "properties": {
+                  "password": {
+                    "type": "string"
+                  },
+                  "email": {
+                    "type": "string"
+                  }
+                }
+              },
+              "SuccessResponse": {
+                "type": "object",
+                "properties": {
+                  "message": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "AWSCognito": {
+      "Type": "AWS::Serverless::Function",
+      "Properties": {
+        "FunctionName": {
+          "Fn::Sub": "${AWS::StackName}-AWSCognito"
+        },
+        "Description": {
+          "Fn::Sub": [
+            "Stack ${AWS::StackName} Function ${ResourceName}",
+            {
+              "ResourceName": "AWSCognito"
+            }
+          ]
+        },
+        "CodeUri": "../../working/AWSCognito",
+        "Handler": "index.handler",
+        "Runtime": "nodejs18.x",
+        "Layers": [
+          "arn:aws:lambda:eu-central-1:360520317360:layer:generalLayer:86"
+        ],
+        "Events": {
+          "HttpApiGET": {
+            "Type": "HttpApi",
+            "Properties": {
+              "Path": "/users",
+              "Method": "GET",
+              "ApiId": {
+                "Ref": "AWSCognitoHttpApi"
+              }
+            }
+          },
+          "HttpApiGETUser": {
+            "Type": "HttpApi",
+            "Properties": {
+              "Path": "/users/{userId}",
+              "Method": "GET",
+              "ApiId": {
+                "Ref": "AWSCognitoHttpApi"
+              }
+            }
+          },
+          "HttpApiPOST": {
+            "Type": "HttpApi",
+            "Properties": {
+              "Path": "/users",
+              "Method": "POST",
+              "ApiId": {
+                "Ref": "AWSCognitoHttpApi"
+              }
+            }
+          },
+          "HttpApiPUT": {
+            "Type": "HttpApi",
+            "Properties": {
+              "Path": "/users/{userId}",
+              "Method": "PUT",
+              "ApiId": {
+                "Ref": "AWSCognitoHttpApi"
+              }
+            }
+          },
+          "HttpApiDELETE": {
+            "Type": "HttpApi",
+            "Properties": {
+              "Path": "/users/{userId}",
+              "Method": "DELETE",
+              "ApiId": {
+                "Ref": "AWSCognitoHttpApi"
+              }
+            }
+          }
+        },
+        "Environment": {
+          "Variables": {
+            "USER_POOL_ID": { "Ref": "AWSCognitoUserPool" },
+            "CLIENT_ID": { "Ref": "AWSCognitoUserPoolClient" }
+          }
+        },
+        "Policies": [
+          "AWSLambdaBasicExecutionRole",
+          {
+            "Version": "2012-10-17",
+            "Statement": [
+              {
+                "Effect": "Allow",
+                "Action": [
+                  "cognito-idp:AdminCreateUser",
+                  "cognito-idp:AdminDeleteUser",
+                  "cognito-idp:AdminUpdateUserAttributes",
+                  "cognito-idp:AdminSetUserPassword",
+                  "cognito-idp:SignUp",
+                  "cognito-idp:AdminConfirmSignUp",
+                  "cognito-idp:ListUsers",
+                  "cognito-idp:AdminGetUser"
+                ],
+                "Resource": { "Fn::GetAtt": ["AWSCognitoUserPool", "Arn"] }
+              }
+            ]
+          }
+        ]
+      }
+    },
+    "AWSCognitoUserPool": {
+      "Type": "AWS::Cognito::UserPool",
+      "Properties": {
+        "UserPoolName": "AWSCognitoUserPool",
+        "AdminCreateUserConfig": {
+          "AllowAdminCreateUserOnly": false
+        },
+        "AutoVerifiedAttributes": ["email"],
+        "Policies": {
+          "PasswordPolicy": {
+            "MinimumLength": 8,
+            "RequireLowercase": true,
+            "RequireNumbers": true,
+            "RequireSymbols": true,
+            "RequireUppercase": true
+          }
+        }
+      }
+    },
+    "AWSCognitoUserPoolClient": {
+      "Type": "AWS::Cognito::UserPoolClient",
+      "Properties": {
+        "ClientName": "AWSCognitoUserPoolClient",
+        "UserPoolId": { "Ref": "AWSCognitoUserPool" },
+        "ExplicitAuthFlows": [
+          "ALLOW_USER_SRP_AUTH",
+          "ALLOW_REFRESH_TOKEN_AUTH"
+        ],
+        "GenerateSecret": false
+      }
+    },
+    "CognitoUserPoolGroupAdmin": {
+      "Type": "AWS::Cognito::UserPoolGroup",
+      "Properties": {
+        "GroupName": "Admin",
+        "UserPoolId": {
+          "Ref": "AWSCognitoUserPool"
+        },
+        "Description": "Admin group with elevated permissions",
+        "Precedence": 1
+      }
+    },
+    "CognitoUserPoolGroupUser": {
+      "Type": "AWS::Cognito::UserPoolGroup",
+      "Properties": {
+        "GroupName": "User",
+        "UserPoolId": {
+          "Ref": "AWSCognitoUserPool"
+        },
+        "Description": "Regular user group",
+        "Precedence": 2
+      }
+    }
+  }
+}

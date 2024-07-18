@@ -1,0 +1,2 @@
+The userpool id is accessible via the env variable VITE_AWSCognitoUserPoolId.
+          The userpool client id is accessible via the env variable VITE_AWSCognitoUserPoolClientId.

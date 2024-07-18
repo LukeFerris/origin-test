@@ -1,0 +1,22 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: AWS SAM CLI Nested Stack for Auto Dependency Layer Creation
+Metadata:
+  SamCliInfo: 1.118.0
+  key: AWS SAM CLI sync command
+Outputs:
+  AWSCognito79a0a0b2DepLayer:
+    Value:
+      Ref: AWSCognito79a0a0b2DepLayer
+Resources:
+  AWSCognito79a0a0b2DepLayer:
+    Metadata:
+      CreatedBy: AWS SAM CLI sync command
+    Properties:
+      CompatibleRuntimes:
+      - nodejs18.x
+      ContentUri: /Users/lukeferris/Documents/code/origin/api/incubator/origin-dc5165ce-30c3-4e1c-a0d3-e70fc02ee6e4/working/DeployAgent/.aws-sam/auto-dependency-layer/AWSCognito79a0a0b2DepLayer
+      Description: Auto created layer for dependencies of function AWSCognito
+      LayerName: o-f9a3361e-deve1b1942c-AWSCognito79a0a0b2-DepLayer
+      RetentionPolicy: Delete
+    Type: AWS::Serverless::LayerVersion
+Transform: AWS::Serverless-2016-10-31
